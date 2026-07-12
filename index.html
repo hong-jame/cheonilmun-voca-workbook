@@ -1026,12 +1026,38 @@ function synMatch(a,b){
   return false;
 }
 
+// 괄호 부분은 '생략 가능'으로 보고, 빼고/넣고 두 형태 모두 정답 인정
+// (턱)수염 → "수염" + "턱수염",  (신발의) 굽 → "굽" + "신발의굽"
+function parenVariants(s){
+  if(!/\(/.test(s)) return [s];
+  const without=s.replace(/\([^)]*\)/g,'');   // 괄호와 그 안의 내용 제거
+  const withIn =s.replace(/[()]/g,'');          // 괄호 기호만 제거, 내용은 유지
+  return [without, withIn];
+}
 function answerKeys(mean){
-  const parts=mean.split(/[,、;；\/]/).map(p=>normKo(p)).filter(Boolean);
   const keys=new Set();
-  parts.forEach(p=>{keys.add(p);
+  const add=(p)=>{
+    if(!p) return;
+    keys.add(p);
     const stem=p.replace(/(하다|되다|시키다|하는|되는|한|된|히|이다|다)$/,"");
-    if(stem.length>=1)keys.add(stem);});
+    if(stem.length>=1)keys.add(stem);
+    // 앞에 붙은 정도부사(몹시/매우/아주…)를 뗀 핵심 뜻도 인정: "몹시화가난"→"화가난"
+    const core=p.replace(/^(몹시|매우|아주|너무|정말|참으로|굉장히|대단히|무척|꽤|상당히|다소|약간|조금)/,"");
+    if(core!==p && core.length>=1){
+      keys.add(core);
+      const cs=core.replace(/(하다|되다|시키다|하는|되는|한|된|히|이다|다)$/,"");
+      if(cs.length>=1)keys.add(cs);
+    }
+  };
+  // "1. …  2. …", "①…②…", "1) …" 등 번호 매김을 개별 뜻 경계(|)로 변환
+  const s=(mean||"")
+    .replace(/[①②③④⑤⑥⑦⑧⑨⑩]/g,"|")
+    .replace(/(^|\s)\d+\s*[.)]/g,"|");
+  // 쉼표·슬래시·세미콜론·번호경계로 각각의 뜻을 분리
+  const parts=s.split(/[,、;；\/|]/).map(p=>p.trim()).filter(Boolean);
+  parts.forEach(part=>{
+    parenVariants(part).forEach(v=>add(normKo(v)));
+  });
   return [...keys];
 }
 function matchKo(mean,heardList,word,spoken){
