@@ -1052,6 +1052,11 @@ function matchKo(mean,heardList,word,spoken){
     for(const k of keys){ if(h===k) return {ok:true,heard:raw}; }
     // 2) 등록된 유사어 그룹만 추가 인정 (활용형은 synMatch 내부 koStem이 흡수)
     for(const k of keys){ if(synMatch(h,k)) return {ok:true,heard:raw}; }
+    // 2.5) 뉘앙스/부분 정답: 학생 답이 정답의 '앞부분(핵심 수식어)'과 일치하면 인정
+    //      (엄지 ↔ 엄지손가락). 한 쪽이 다른 쪽의 접두일 때만 → 뒷부분(일반명사)·부사 오탐은 차단.
+    for(const k of keys){
+      if(h.length>=2 && k.length>=2 && (k.startsWith(h) || h.startsWith(k))) return {ok:true,heard:raw};
+    }
     // 3) 음성 입력일 때만: 자모 1개 차이(끝소리 오인식 등)는 정답 인정 (움직임↔움직이)
     if(spoken){
       for(const k of keys){ if(koClose(h,k)) return {ok:true,heard:raw}; }
