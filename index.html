@@ -1034,6 +1034,11 @@ function parenVariants(s){
   const withIn =s.replace(/[()]/g,'');          // 괄호 기호만 제거, 내용은 유지
   return [without, withIn];
 }
+// 단어 사이에 낀 조사(이/가/을/를/은/는/에/의/도/만/와/과)를 없앤 형태도 인정
+// "호기심이 많은" → "호기심 많은",  "물을 주다" → "물 주다"  (끝 조사·단독어는 유지)
+function stripMedialParticles(s){
+  return s.replace(/([가-힣])(이|가|을|를|은|는|에|의|도|만|와|과)(\s)/g,"$1$3");
+}
 function answerKeys(mean){
   const keys=new Set();
   const add=(p)=>{
@@ -1041,8 +1046,8 @@ function answerKeys(mean){
     keys.add(p);
     const stem=p.replace(/(하다|되다|시키다|하는|되는|한|된|히|이다|다)$/,"");
     if(stem.length>=1)keys.add(stem);
-    // 앞에 붙은 정도부사(몹시/매우/아주…)를 뗀 핵심 뜻도 인정: "몹시화가난"→"화가난"
-    const core=p.replace(/^(몹시|매우|아주|너무|정말|참으로|굉장히|대단히|무척|꽤|상당히|다소|약간|조금)/,"");
+    // 앞에 붙은 수식 부사(몹시/매우/특히/주로…)를 뗀 핵심 뜻도 인정: "몹시화가난"→"화가난"
+    const core=p.replace(/^(몹시|매우|아주|너무|정말|참으로|굉장히|대단히|무척|꽤|상당히|다소|약간|조금|특히|특별히|주로|흔히|보통)/,"");
     if(core!==p && core.length>=1){
       keys.add(core);
       const cs=core.replace(/(하다|되다|시키다|하는|되는|한|된|히|이다|다)$/,"");
@@ -1056,7 +1061,11 @@ function answerKeys(mean){
   // 쉼표·슬래시·세미콜론·번호경계로 각각의 뜻을 분리
   const parts=s.split(/[,、;；\/|]/).map(p=>p.trim()).filter(Boolean);
   parts.forEach(part=>{
-    parenVariants(part).forEach(v=>add(normKo(v)));
+    parenVariants(part).forEach(v=>{
+      add(normKo(v));
+      const sp=stripMedialParticles(v);       // 조사 생략 형태도 키에 추가
+      if(sp!==v) add(normKo(sp));
+    });
   });
   return [...keys];
 }
