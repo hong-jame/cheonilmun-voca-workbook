@@ -1,0 +1,15 @@
+{
+  "name": "천일문 VOCA 중등 필수",
+  "short_name": "천일문VOCA",
+  "description": "쎄듀 천일문 VOCA 중등 필수 단어장 · 말하기·받아쓰기 시험 + 워크북",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f5fb",
+  "theme_color": "#1F3864",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
